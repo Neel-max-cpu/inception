@@ -279,45 +279,111 @@ TreeNode<int>* nextLargerElement2(TreeNode<int> *root, int n) {
     return nullptr;
 }
 
+bool flag = true;
+bool checkSimilar(TreeNode<int>*root){
+    for(int i=0; i<root->children.size(); i++){
+        if(root->data != root->children[i]->data){
+            flag = false;
+            return flag;
+        }
+        else{
+            checkSimilar(root->children[i]);
+        }
+    }
+    return flag;
+}
+
+
+
+// METHOD 1 ---------- FOR finding the 2nd largest element
+bool flag = true;
+bool checkSimilar(TreeNode<int>*root){
+    for(int i=0; i<root->children.size(); i++){
+        if(root->data != root->children[i]->data){
+            flag = false;
+            return flag;
+        }
+        else{
+            checkSimilar(root->children[i]);
+        }
+    }
+    return flag;
+}
 TreeNode <int>* secondLargest(TreeNode<int> *root) {
     /* Given a generic tree, find and return the node with second largest value
      * in given tree. Return NULL if no node with required value is present. */
     if(root==nullptr) return nullptr;
-    int childCount = root->children.size();
-    if(childCount==0) return nullptr;
 
-    // we have atleast two nodes: root node and one child node
-    TreeNode<int> *largest = root, *secLargest=root->children[0];
-    if(largest->data<secLargest->data)
-    {
-        secLargest = root;
-        largest=root->children[0];
+    // edge case check if all the nodes are equal or not if yes NULL else continue -----
+    if(checkSimilar(root) == true) return NULL;
+    else{
+        int childCount = root->children.size();
+        if(childCount==0) return nullptr;
+
+        // we have atleast two nodes: root node and one child node
+        TreeNode<int> *largest = root, *secLargest=root->children[0];
+        if(largest->data<secLargest->data)
+        {
+            secLargest = root;
+            largest=root->children[0];
+        }
+        queue<TreeNode<int>*> q;
+        q.push(root);
+        while(!q.empty())
+        {
+            TreeNode<int> *curr = q.front();
+            q.pop();
+            childCount = curr->children.size();
+            for(int i=0; i<childCount; i++)
+            {
+                q.push(curr->children[i]);
+                if(curr->children[i]->data > secLargest->data)
+                {
+                    if(curr->children[i]->data > largest->data)
+                    {
+                        secLargest = largest;
+                        largest = curr->children[i];
+                    }
+                    else
+                    {
+                        secLargest = curr->children[i];
+                    }
+                }
+            }    
+        }
+        return secLargest;
     }
-    queue<TreeNode<int>*> q;
+}
+
+// METHDO 2 --------------- 
+// HERE DON'T allot the secondLargest one instead initiallize it with the INT_MIN since any value of tree>INT_MIN else no value is present 
+TreeNode<int>* secondLargest(TreeNode<int>* root) {
+    // Write your code here
+    if(root == NULL) return NULL;
+    int childCount = root->children.size();
+    if(childCount == 0) return NULL;
+    
+    TreeNode<int> *largest = root;
+    // or don't initiallize the second largest ------------
+    TreeNode<int> *secondLargest = new TreeNode<int>(INT_MIN);
+    queue<TreeNode<int>*>q;
     q.push(root);
-    while(!q.empty())
-    {
-        TreeNode<int> *curr = q.front();
+    while(!q.empty()){
+        TreeNode<int>*curr = q.front();
+        if(curr->data > largest->data){
+                    secondLargest = largest;
+                    largest = curr;                
+            }else if(curr->data!=largest->data&&curr->data>secondLargest->data){
+                secondLargest = curr;
+            }
         q.pop();
         childCount = curr->children.size();
-        for(int i=0; i<childCount; i++)
-        {
+        for(int i=0; i<childCount; i++){
             q.push(curr->children[i]);
-            if(curr->children[i]->data > secLargest->data)
-            {
-                if(curr->children[i]->data > largest->data)
-                {
-                    secLargest = largest;
-                    largest = curr->children[i];
-                }
-                else
-                {
-                    secLargest = curr->children[i];
-                }
-            }
         }
     }
-    return secLargest;
+    // if secondLargest == INT_MIN return Null else return second largest
+    return secondLargest->data==INT_MIN?NULL:secondLargest;
 }
 
 void replaceWithDepthValueHelper(TreeNode<int> *root, int value){
